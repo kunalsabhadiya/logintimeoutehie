@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:ffi';
 
 import 'package:flutter/material.dart';
-import 'package:local_session_timeout/local_session_timeout.dart';
+import 'package:logintimeoutehie/screen/AuthSetUpScreen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home.dart';
@@ -9,15 +10,22 @@ import 'home.dart';
 class Login extends StatefulWidget {
   @override
   _Login createState() => _Login();
-  final StreamController<SessionState> sessionStateStream;
-  late String loggedOutReason;
-
-  Login({required this.sessionStateStream, required this.loggedOutReason});
 }
 
 class _Login extends State<Login> {
+  TextEditingController InstanceIdController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool isFirstTimeLogin = false;
+  bool keepMeLoggedIn = false;
+  bool isAuthActivated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isFirstTimeLogin();
+    _isAuthSet();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +33,7 @@ class _Login extends State<Login> {
       backgroundColor: Colors.white,
       body: SingleChildScrollView(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Padding(
               padding: const EdgeInsets.only(top: 110.0),
@@ -38,26 +47,62 @@ class _Login extends State<Login> {
                     child: Image.asset('images/assets/app_logo.png')),
               ),
             ),
-             Padding(
-              padding: EdgeInsets.only(left:15.0,right: 15.0,top:0,bottom: 0),
+            isFirstTimeLogin
+                ? Container()
+                : Padding(
+                    padding: EdgeInsets.only(
+                        left: 15.0, right: 15.0, top: 0, bottom: 0),
+                    child: TextField(
+                      controller: InstanceIdController,
+                      keyboardType: TextInputType.number,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'InstanceID',
+                      ),
+                    )),
+            Padding(
+              padding: const EdgeInsets.only(
+                  left: 15.0, right: 15.0, top: 15, bottom: 0),
               child: TextField(
                 controller: emailController,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Email Id',
-                    hintText: 'Enter valid email id as abc@gmail.com'),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Email Id',
+                ),
               ),
             ),
-             Padding(
-              padding: EdgeInsets.only(
+            Padding(
+              padding: const EdgeInsets.only(
                   left: 15.0, right: 15.0, top: 15, bottom: 0),
               child: TextField(
                 controller: passwordController,
                 obscureText: true,
-                decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Password',
-                    hintText: 'Enter secure password'),
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Password',
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 8, right: 8, top: 8),
+              child: Row(
+                children: [
+                  Checkbox(
+                    value: keepMeLoggedIn,
+                    onChanged: (value) {
+                      setState(() {
+                        keepMeLoggedIn = value!;
+                      });
+                    },
+                    activeColor: Colors.blue,
+                  ),
+                  //Text
+                  const SizedBox(width: 10), //SizedBox
+                  const Text(
+                    'Keep me logged in. ',
+                    style: TextStyle(fontSize: 14.0),
+                  ),
+                ],
               ),
             ),
             SizedBox(
@@ -68,48 +113,63 @@ class _Login extends State<Login> {
                   padding: const EdgeInsets.only(top: 20.0),
                   child: ElevatedButton(
                     style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.all(Colors.blue),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                        RoundedRectangleBorder(
+                        backgroundColor: MaterialStateProperty.all(Colors.blue),
+                        shape:
+                            MaterialStateProperty.all<RoundedRectangleBorder>(
+                                RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8.0),
-                        )
-                      )
-                    ),
+                        ))),
                     child: const Text(
                       'Log in ',
                       style: TextStyle(color: Colors.white, fontSize: 20),
                     ),
-                    onPressed: () async{
-
-
-                      if(!emailController.text.isEmpty && !passwordController.text.isEmpty){
+                    onPressed: () async {
+                      if (!emailController.text.isEmpty &&
+                          !passwordController.text.isEmpty) {
                         _saveLoginStatus();
-                        widget.sessionStateStream.add(SessionState.startListening);
-                        widget.loggedOutReason = await Navigator.of(context).push(
+                        Navigator.of(context).pushReplacement(
                           MaterialPageRoute(
-                            builder: (_) => HomeScreen(
-                              sessionStateStream: widget.sessionStateStream,
-                            ),
+                            builder: (_) => isAuthActivated
+                                ? HomeScreen()
+                                : AuthSetUpScreen(),
                           ),
                         );
                       }
-
                     },
                   ),
                 ),
               ),
             ),
-
           ],
         ),
       ),
     );
   }
 
-  void _saveLoginStatus() async{
+  void _saveLoginStatus() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("email",  emailController.text);
-    prefs.setString("password",  passwordController.text);
+    prefs.setString("email", emailController.text);
+    prefs.setString("password", passwordController.text);
     prefs.setBool("isLoggedIn", true);
+    prefs.setString("InstanceID", InstanceIdController.text);
+    prefs.setBool("keepMeLoggedIn", keepMeLoggedIn);
   }
+
+  void _isFirstTimeLogin() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.containsKey('InstanceID');
+    bool? keepMeLoggedIn = prefs.getBool('keepMeLoggedIn');
+    setState(() {
+      isFirstTimeLogin = isLoggedIn;
+      this.keepMeLoggedIn = keepMeLoggedIn!;
+    });
+    }
+
+  void _isAuthSet() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    bool isLoggedIn = prefs.containsKey('AuthActivation');
+    setState(() {
+      isAuthActivated =  isLoggedIn;
+    });
+    }
 }
