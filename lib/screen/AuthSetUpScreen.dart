@@ -36,6 +36,7 @@ class _AuthSetUpScreen extends State<AuthSetUpScreen> {
     super.initState();
     _printData();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
