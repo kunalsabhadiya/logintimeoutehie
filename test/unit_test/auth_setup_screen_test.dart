@@ -75,7 +75,6 @@ void main() {
   testWidgets('prints data on initState', (WidgetTester tester) async {
     await buildAuthSetUpScreen(tester);
 
-    // Verify the print statements - in real cases, use proper logging and verification.
     verifyNever(mockSharedPreferences.getString('email'));
     verifyNever(mockSharedPreferences.getString('password'));
     verifyNever(mockSharedPreferences.getBool('isLoggedIn'));

@@ -46,7 +46,7 @@ void main() {
           when(mockSharedPreferences.getBool('AuthActivation')).thenReturn(false);
 
           await buildSplashScreen(tester);
-          await tester.pump(Duration(seconds: 3));
+          await tester.pump(const Duration(seconds: 2));
           expect(find.byType(HomeScreen), findsNWidgets(0));
         });
 
@@ -62,7 +62,7 @@ void main() {
 
       await buildSplashScreen(tester);
 
-      await tester.pump(Duration(seconds: 3)); // Wait for the timer to finish
+      await tester.pump(const Duration(seconds: 2)); // Wait for the timer to finish
 
       expect(find.byType(HomeScreen), findsNothing);
     });
@@ -73,7 +73,7 @@ void main() {
           when(mockSharedPreferences.getBool('keepMeLoggedIn')).thenReturn(false);
 
           await buildSplashScreen(tester);
-          await tester.pump(Duration(seconds: 3));
+          await tester.pump(const Duration(seconds: 2));
 
           expect(find.byType(Login), findsNWidgets(0));
         });
