@@ -11,9 +11,7 @@ class _PizzaWidgetState extends State<PizzaWidget> {
   List<int> segmentValues = [0, 1, 2, 1, 0];
 
 
-  List<String> titles = ["Lodine staining", "Aceto uptake", "Margin surface", "Vessels", "Lesion size"];
-
-  // String tappedText = '';
+  List<String> titles = ['Lodine staining', 'Aceto uptake', 'Margin surface', 'Vessels', 'Lesion size'];
   List<Color> segmentColors = const [
     Color(0xff00C56F),
     Color(0xffFF8C00),
@@ -34,7 +32,7 @@ class _PizzaWidgetState extends State<PizzaWidget> {
   void _initializeSegments() {
     double centerX = 150;
     double centerY = 150;
-    double r1 = 150;
+    double r1 = 160;
     double difference = r1 / 4;
     double r2 = r1 - difference;
     double r3 = r2 - difference;
@@ -146,43 +144,15 @@ class _PizzaWidgetState extends State<PizzaWidget> {
   }
   @override
   Widget build(BuildContext context) {
-    return  Stack(
-      children:[
-        CustomPaint(
-          size: const Size(300, 300),
-          painter: CirclulerChart(segments: segments,centerSum:  centerSum),
-
-        ),
-        Positioned.fill(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              double radius = 170;
-              double centerX = 150;
-              double centerY = 150;
-              double startAngle = -pi / 2;
-              return Stack(
-                children: List.generate(titles.length, (index) {
-                  double angle = startAngle + 2 * pi * index / titles.length;
-                  double x = centerX + (radius + 20) * cos(angle);
-                  double y = centerY + (radius + 20) * sin(angle);
-                  return Positioned(
-                    left: x - 20,
-                    top: y - 10,
-                    child: Text(
-                      titles[index],
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.black,
-                      ),
-                    ),
-                  );
-                }),
-              );
-            },
+    return  Center(
+      child: Stack(
+        children:[
+          CustomPaint(
+            size: const Size(300, 300),
+            painter: CirclulerChart(segments: segments,centerSum:  centerSum),
           ),
-        ),
-
-      ],
+        ],
+      ),
     );
   }
 }
